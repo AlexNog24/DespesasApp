@@ -69,11 +69,11 @@ class App(ctk.CTk):
 
         # Data
         self.data_label = ctk.CTkLabel(self.input_frame,
-                                       text="Data (DD-MM-AAAA):")
+                                       text="Data (AAAA-MM-DD):")
         self.data_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
         self.data_entry = ctk.CTkEntry(self.input_frame)
         self.data_entry.grid(row=0, column=1, padx=10, pady=10)
-        self.data_entry.insert(0, datetime.now().strftime("%d-%m-%Y"))
+        self.data_entry.insert(0, datetime.now().strftime("%Y-%m-%d"))
 
         # Descrição
         self.desc_label = ctk.CTkLabel(self.input_frame, text="Descrição:")
@@ -111,19 +111,23 @@ class App(ctk.CTk):
         style = ttk.Style()
         style.theme_use("default")
 
-        bg_color = self._apply_appearance_mode
-        (ctk.ThemeManager.theme["CTkFrame"]["fg_color"])
-        text_color = self._apply_appearance_mode
-        (ctk.ThemeManager.theme["CTkLabel"]["text_color"])
-        selected_color = self._apply_appearance_mode
-        (ctk.ThemeManager.theme["CTkButton"]["fg_color"])
+        is_dark = ctk.get_appearance_mode() == "Dark"
+        bg_color = "#2b2b2b" if is_dark else "#dbdbdb"
+        text_color = "#dce4ee" if is_dark else "#000000"
+        selected_color = "#1f538d" if is_dark else "#3a7ebf"
+        heading_bg = "#1f1f1f" if is_dark else "#cfcfcf"
 
         style.configure("Treeview", background=bg_color,
-                        foreground=text_color,
-                        rowheight=30, fieldbackground=bg_color,
-                        font=("Helvetica", 11))
-        style.configure("Treeview.Heading", font=("Helvetica", 12, "bold"))
-        style.map('Treeview', background=[('selected', selected_color)])
+                        foreground=text_color, rowheight=30,
+                        fieldbackground=bg_color, font=("Helvetica", 11),
+                        borderwidth=0)
+        style.map('Treeview', background=[('selected', selected_color)],
+                  foreground=[('selected', 'white')])
+
+        style.configure("Treeview.Heading", background=heading_bg,
+                        foreground=text_color, font=("Helvetica", 12, "bold"),
+                        borderwidth=1)
+        style.map('Treeview.Heading', background=[('active', bg_color)])
 
         self.tree = ttk.Treeview(self.table_frame,
                                  columns=("ID", "Data", "Descrição",

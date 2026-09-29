@@ -3,6 +3,7 @@ from datetime import datetime
 
 DB_NAME = "despesas.db"
 
+
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -16,7 +17,7 @@ def init_db():
             valor REAL NOT NULL
         )
     ''')
-    
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS orcamento (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,6 +29,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 def adicionar_despesa(data, descricao, categoria, valor):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -38,13 +40,16 @@ def adicionar_despesa(data, descricao, categoria, valor):
     conn.commit()
     conn.close()
 
+
 def obter_despesas():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute('SELECT id, data, descricao, categoria, valor FROM despesas ORDER BY data DESC')
+    cursor.execute('SELECT id, data, descricao, categoria, '
+                   'valor FROM despesas ORDER BY data DESC')
     rows = cursor.fetchall()
     conn.close()
     return rows
+
 
 def apagar_despesa(id_despesa):
     conn = sqlite3.connect(DB_NAME)
@@ -53,28 +58,35 @@ def apagar_despesa(id_despesa):
     conn.commit()
     conn.close()
 
+
 def total_por_categoria():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute('SELECT categoria, SUM(valor) FROM despesas GROUP BY categoria')
+    cursor.execute('SELECT categoria, SUM(valor) '
+                   'FROM despesas GROUP BY categoria')
     rows = cursor.fetchall()
     conn.close()
     return rows
+
 
 def adicionar_orcamento(nome, tipo, valor):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO orcamento (nome, tipo, valor) VALUES (?, ?, ?)', (nome, tipo, valor))
+    cursor.execute('INSERT INTO orcamento (nome, tipo, valor)'
+                   'VALUES (?, ?, ?)', (nome, tipo, valor))
     conn.commit()
     conn.close()
+
 
 def obter_orcamento():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute('SELECT id, nome, tipo, valor FROM orcamento ORDER BY tipo DESC')
+    cursor.execute('SELECT id, nome, tipo,'
+                   'valor FROM orcamento ORDER BY tipo DESC')
     rows = cursor.fetchall()
     conn.close()
     return rows
+
 
 def apagar_orcamento(id_orcamento):
     conn = sqlite3.connect(DB_NAME)
@@ -83,11 +95,13 @@ def apagar_orcamento(id_orcamento):
     conn.commit()
     conn.close()
 
+
 # --- NOVAS FUNÇÕES: FILTROS POR MÊS ---
 def obter_meses_disponiveis():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT substr(data, 1, 7) FROM despesas ORDER BY data DESC")
+    cursor.execute("SELECT DISTINCT substr(data, 1, 7)"
+                   " FROM despesas ORDER BY data DESC")
     rows = cursor.fetchall()
     conn.close()
     if rows:
@@ -95,18 +109,23 @@ def obter_meses_disponiveis():
     else:
         return [datetime.now().strftime("%Y-%m")]
 
+
 def obter_despesas_mes(ano_mes):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, data, descricao, categoria, valor FROM despesas WHERE data LIKE ? ORDER BY data DESC", (f"{ano_mes}-%",))
+    cursor.execute("SELECT id, data, descricao, categoria,"
+                   "valor FROM despesas WHERE data LIKE ? "
+                   "ORDER BY data DESC", (f"{ano_mes}-%",))
     rows = cursor.fetchall()
     conn.close()
     return rows
 
+
 def total_por_categoria_mes(ano_mes):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT categoria, SUM(valor) FROM despesas WHERE data LIKE ? GROUP BY categoria", (f"{ano_mes}-%",))
+    cursor.execute("SELECT categoria, SUM(valor) FROM despesas"
+                   " WHERE data LIKE ? GROUP BY categoria", (f"{ano_mes}-%",))
     rows = cursor.fetchall()
     conn.close()
     return rows
