@@ -335,14 +335,73 @@ class App(ctk.CTk):
         if not dados:
             messagebox.showinfo("Aviso", f"Não existem dados"
                                 f"para mostrar no gráfico para {mes_atual}.")
+        if not mes_atual:
+            messagebox.showinfo("Aviso", "Nenhum mês selecionado.")
             return
 
         categorias = [d[0] for d in dados]
         valores = [d[1] for d in dados]
 
+        ano_atual = mes_atual[:4]
+
         janela_grafico = ctk.CTkToplevel(self)
         janela_grafico.title(f"Despesas por Categoria - {mes_atual}")
         janela_grafico.geometry("600x500")
+        janela_grafico.title("Análise de Despesas")
+        janela_grafico.geometry("700x600")
+
+        tabview = ctk.CTkTabview(janela_grafico)
+        tabview.pack(fill="both", expand=True, padx=10, pady=10)
+
+        tab_cat = tabview.add(f"Categorias ({mes_atual})")
+        tab_mes = tabview.add(f"Evolução Mensal ({ano_atual})")
+        tab_ano = tabview.add("Comparação Anual")
+
+        # --- TAB CATEGORIAS ---
+        dados_cat = database.total_por_categoria_mes(mes_atual)
+        if dados_cat:
+            fig1, ax1 = plt.subplots(figsize=(6, 4.5))
+            ax1.pie([d[1] for d in dados_cat],
+                    labels=[d[0] for d in dados_cat],
+                    autopct='%1.1f%%', startangle=90)
+            ax1.axis('equal')
+            canvas1 = FigureCanvasTkAgg(fig1, master=tab_cat)
+            canvas1.draw()
+            canvas1.get_tk_widget().pack(fill="both", expand=True)
+        else:
+            ctk.CTkLabel(tab_cat,
+                         text=f"Sem dados para {mes_atual}").pack(pady=50)
+
+        # --- TAB MENSAL ---
+        dados_mes = database.total_por_mes(ano_atual)
+        if dados_mes:
+            fig2, ax2 = plt.subplots(figsize=(6, 4.5))
+            meses = [d[0] for d in dados_mes]
+            valores_m = [d[1] for d in dados_mes]
+            ax2.bar(meses, valores_m, color='#4a90e2')
+            ax2.set_title(f"Despesas por Mês ({ano_atual})")
+            ax2.set_ylabel("Valor (€)")
+            canvas2 = FigureCanvasTkAgg(fig2, master=tab_mes)
+            canvas2.draw()
+            canvas2.get_tk_widget().pack(fill="both", expand=True)
+        else:
+            ctk.CTkLabel(tab_mes,
+                         text=f"Sem dados para {ano_atual}").pack(pady=50)
+
+        # --- TAB ANUAL ---
+        dados_ano = database.total_por_ano()
+        if dados_ano:
+            fig3, ax3 = plt.subplots(figsize=(6, 4.5))
+            anos = [d[0] for d in dados_ano]
+            valores_a = [d[1] for d in dados_ano]
+            ax3.bar(anos, valores_a, color='#e24a4a')
+            ax3.set_title("Despesas Totais por Ano")
+            ax3.set_ylabel("Valor (€)")
+            canvas3 = FigureCanvasTkAgg(fig3, master=tab_ano)
+            canvas3.draw()
+            canvas3.get_tk_widget().pack(fill="both", expand=True)
+        else:
+            ctk.CTkLabel(tab_ano, text="Sem dados.").pack(pady=50)
 
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.pie(valores, labels=categorias, autopct='%1.1f%%', startangle=90)
